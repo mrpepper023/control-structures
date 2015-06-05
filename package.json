@@ -1,0 +1,10 @@
+{
+  "name": "control-structures",
+  "version": "0.0.1",
+  "private": true,
+  "dependencies": {
+  },
+  "main": "./index",
+  "author": "Michio Yokomizo",
+  "license": "MIT"
+}
