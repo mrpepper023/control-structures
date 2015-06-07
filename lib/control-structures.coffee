@@ -6,7 +6,7 @@
    you want to use this library in same namespace with node.js as with web-browser,
    include this library like 'var cs = require('control-structures');'
 ###
-if FORCE_CLIENTSIDE or (typeof process != "undefined" && typeof require != "undefined")
+if FORCE_CLIENTSIDE? and (typeof process != "undefined" && typeof require != "undefined")
   target = this['cs']
 else
   target = module.exports
@@ -54,62 +54,6 @@ target['_'] = ->
   ).apply(this,firstargs)
 
 ###
-   exception handling
-   
-   myexc = new exc
-      例外管理オブジェクトを生成します。ここではmyexcとします。
-   myexc._try(block_args_array,f_block,e_array,f_catch,f_finally,f_next)
-      例外スコープを開始します。実処理はblock内、例外処理はf_catch内、
-      終了処理はf_finally内で行い、f_nextへと進みます。
-      現在のところ、f_catch,f_finally内で_throwすると、終了処理は完了しません
-      block_args_array
-         blockに渡す引数を、配列にして指定します。
-         [arg1,arg2]を渡すと、f_block(myexc,arg1,arg2)が呼ばれます。
-      f_block(myexc,...)
-         実処理を行うスコープです。このexc例外を発生しうる関数を
-         呼び出すときはmyexcを渡して下さい。次へ進むときは
-         myexc._finally(...)を呼べば、f_finally(myexc,next,...)が呼ばれます。
-      e_array
-         f_catchで処理する例外の種類を列挙した配列です。
-         可読性のある文字列をお勧めします。
-      f_catch(myexc,_e,...)
-         _throwに渡された例外の種類と、その他の_throwに渡された引数が
-         得られます。e_arrayで列挙した例外は全て処理して下さい。
-         処理を終えたらmyexc._finally(...)を呼んで下さい。f_blockと同様です。
-      f_finally(myexc,next,...)
-         終了処理を簡潔に行います。処理を終えたら、next(...)を呼んで下さい。
-         f_next(...)が呼ばれます。基本的にはmyexcを引数に指定して下さい。
-      f_next(...)
-         次の処理を行う関数です。
-   myexc._throw(_e,...)
-      例外を発生させます。引数はf_catchに渡されます。
-   myexc._finally(...)
-      例外スコープのスタックをpopして、ユーザ終了処理を呼び出します。
-      引数はf_finallyに渡されます。
-###
-target['exc'] = class exc
-  _stack = []
-  constructor: ->
-
-  _try: (block_args_array,block,e_array,arg_catch,arg_finally,arg_next) ->
-    _stack.push({e_array:e_array,_catch:arg_catch,_finally:arg_finally,next:arg_next})
-    block.apply null,@
-
-  _throw: (_e) ->
-    while (catchset = _stack.pop())
-      result = catchset.e_array.indexOf _e
-      if result != -1
-        _stack.push catchset
-        catchset._catch.apply null,[@,_e].slice.call(arguments)
-        return
-    console.log 'uncaught exception: '+_e.toString()
-    process.exit 1
-
-  _finally: ->
-    stackpop = _stack.pop()
-    stackpop._finally.apply null,[@,stackpop.next].slice.call(arguments)
-
-###
    Each (simultaneous)
    
    _each(obj, applyargs_array, applyfunc, endfunc)
@@ -141,13 +85,13 @@ target['_each'] = (obj, applyargs_array, applyfunc, endfunc) ->
       for val,i in obj
         num++
         applyfunc.apply null,[val,i,->
-          next.apply null,[num,endfunc].slice.call(arguments)
+          next.apply null,[num,endfunc].concat([].slice.call(arguments))
         ].concat(applyargs_array)
     else
       for key,val of obj
         num++
         applyfunc.apply null,[key,val,->
-          next.apply null,[num,endfunc].slice.call(arguments)
+          next.apply null,[num,endfunc].concat([].slice.call(arguments))
         ].concat(applyargs_array)
   )(->
     count = 0
@@ -199,14 +143,14 @@ target['_for'] = (i, f_judge, f_iter, firstarg_array, loopfunc, endfunc) ->
       if f_judge i
         loopfunc.apply null,[i,->
           #_break
-          endfunc.apply null,[i].slice.call(arguments)
+          endfunc.apply null,[i].concat([].slice.call(arguments))
         ,->
           #_next
           i = f_iter i
           func.apply null,arguments
-        ].slice.call(arguments)
+        ].concat([].slice.call(arguments))
       else
-        endfunc.apply null,[i].slice.call(arguments)
+        endfunc.apply null,[i].concat([].slice.call(arguments))
   ).apply null,firstarg_array
 
 ###
@@ -239,7 +183,7 @@ target['_for_in'] = (obj, firstargs, loopfunc, endfunc) ->
             endfunc.apply null,arguments
           ,->
             func.apply null,arguments
-          ].slice.call(arguments)
+          ].concat([].slice.call(arguments))
         else
           key = Object.keys(obj)[i]
           value = obj[key]
@@ -247,7 +191,7 @@ target['_for_in'] = (obj, firstargs, loopfunc, endfunc) ->
             endfunc.apply null,arguments
           ,->
             func.apply null,arguments
-          ].slice.call(arguments)
+          ].concat([].slice.call(arguments))
       else
         endfunc.apply null,arguments
   )(firstargs)
@@ -276,7 +220,7 @@ target['_for_in'] = (obj, firstargs, loopfunc, endfunc) ->
       endfunc(...)
          次の処理です。上記の通り、引数を受け取ることができます。
 ###
-target['_while'] = (f_judge, firstarg_array, loopfunc, endfunc) ->
+target['_while'] = _while = (f_judge, firstarg_array, loopfunc, endfunc) ->
   if firstarg_array?
     firstarg_array = []
   (y (func) ->
@@ -288,10 +232,83 @@ target['_while'] = (f_judge, firstarg_array, loopfunc, endfunc) ->
         ,->
           #_next
           func.apply null,arguments
-        ].slice.call(arguments)
+        ].concat([].slice.call(arguments))
       else
         endfunc.apply null,[].slice.call(arguments)
   ).apply null,firstarg_array
+
+###
+   exception handling
+   
+   myexc = new exc
+      例外管理オブジェクトを生成します。ここではmyexcとします。
+   myexc._try(block_args_array,f_block,e_array,f_catch,f_finally,f_next)
+      例外スコープを開始します。実処理はblock内、例外処理はf_catch内、
+      終了処理はf_finally内で行い、f_nextへと進みます。
+      現在のところ、f_catch,f_finally内で_throwすると、終了処理は完了しません
+      block_args_array
+         blockに渡す引数を、配列にして指定します。
+         [arg1,arg2]を渡すと、f_block(myexc,arg1,arg2)が呼ばれます。
+      f_block(myexc,...)
+         実処理を行うスコープです。このexc例外を発生しうる関数を
+         呼び出すときはmyexcを渡して下さい。次へ進むときは
+         myexc._finally(...)を呼べば、f_finally(myexc,next,...)が呼ばれます。
+      e_array
+         f_catchで処理する例外の種類を列挙した配列です。
+         可読性のある文字列をお勧めします。
+      f_catch(myexc,_e,...)
+         _throwに渡された例外の種類と、その他の_throwに渡された引数が
+         得られます。e_arrayで列挙した例外は全て処理して下さい。
+         処理を終えたらmyexc._finally(...)を呼んで下さい。f_blockと同様です。
+      f_finally(myexc,next,...)
+         終了処理を簡潔に行います。処理を終えたら、next(...)を呼んで下さい。
+         f_next(...)が呼ばれます。基本的にはmyexcを引数に指定して下さい。
+      f_next(...)
+         次の処理を行う関数です。
+   myexc._throw(_e,...)
+      例外を発生させます。引数はf_catchに渡されます。
+   myexc._finally(...)
+      例外スコープのスタックをpopして、ユーザ終了処理を呼び出します。
+      引数はf_finallyに渡されます。
+###
+target['exc'] = class exc
+  _stack = []
+  constructor: ->
+
+  _try: (block_args_array,block,e_array,arg_catch,arg_finally,arg_next) ->
+    _stack.push({e_array:e_array,_catch:arg_catch,_finally:arg_finally,next:arg_next})
+    block.apply this,block_args_array
+
+  fa = ->
+    stackpop = _stack.pop()
+    stackpop._finally.apply null,[].slice.call(arguments)
+
+  _finally: ->
+    stackpop = _stack.pop()
+    stackpop._finally.apply null,[stackpop.next].concat([].slice.call(arguments))
+
+  _throw: (_e) =>
+    catchset = {}
+    _while ->(true),
+    [],
+    (_break,_next)=>
+      catchset = _stack.pop()
+      if catchset?
+        _stack.push catchset
+        result = catchset.e_array.indexOf _e
+        if result != -1
+          catchset._catch.apply null,[_e].concat([].slice.call(arguments))
+        else
+          if arguments.length <= 2
+            fa.apply null,[_next]
+          else
+            fa.apply null,[].slice.call(arguments).shift().shift().unshift(_next)
+      else
+        _break()
+    ,->
+      console.log 'uncaught exception: '+_e.toString()
+      process.exit 1
+
 
 ###
    todo:

@@ -1,1 +1,1 @@
-module.exports = require('./lib/asynchronous-control-structure');
+module.exports = require('./lib/control-structures');
