@@ -84,14 +84,14 @@ target['_each'] = (obj, applyargs_array, applyfunc, endfunc) ->
     if isarr
       for val,i in obj
         num++
-        applyfunc.apply null,[val,i,->
-          next.apply null,[num,endfunc].concat([].slice.call(arguments))
+        applyfunc.apply this,[val,i,->
+          next.apply this,[num,endfunc].concat([].slice.call(arguments))
         ].concat(applyargs_array)
     else
       for key,val of obj
         num++
-        applyfunc.apply null,[key,val,->
-          next.apply null,[num,endfunc].concat([].slice.call(arguments))
+        applyfunc.apply this,[key,val,->
+          next.apply this,[num,endfunc].concat([].slice.call(arguments))
         ].concat(applyargs_array)
   )(->
     count = 0
@@ -105,7 +105,7 @@ target['_each'] = (obj, applyargs_array, applyfunc, endfunc) ->
             result.push([])
           result[i].push(arg)
       if count == num
-        next.apply null,result
+        next.apply this,result
   )
 
 ###
@@ -141,17 +141,17 @@ target['_for'] = (i, f_judge, f_iter, firstarg_array, loopfunc, endfunc) ->
   (y (func) ->
     return ->
       if f_judge i
-        loopfunc.apply null,[i,->
+        loopfunc.apply this,[i,->
           #_break
-          endfunc.apply null,[i].concat([].slice.call(arguments))
+          endfunc.apply this,[i].concat([].slice.call(arguments))
         ,->
           #_next
           i = f_iter i
-          func.apply null,arguments
+          func.apply this,arguments
         ].concat([].slice.call(arguments))
       else
-        endfunc.apply null,[i].concat([].slice.call(arguments))
-  ).apply null,firstarg_array
+        endfunc.apply this,[i].concat([].slice.call(arguments))
+  ).apply this,firstarg_array
 
 ###
    for in Array or Object
@@ -179,21 +179,21 @@ target['_for_in'] = (obj, firstargs, loopfunc, endfunc) ->
     return ->
       if i < indexlimit
         if isarr
-          loopfunc.apply null,[obj[i],i, ->
-            endfunc.apply null,arguments
+          loopfunc.apply this,[obj[i],i, ->
+            endfunc.apply this,arguments
           ,->
-            func.apply null,arguments
+            func.apply this,arguments
           ].concat([].slice.call(arguments))
         else
           key = Object.keys(obj)[i]
           value = obj[key]
-          loopfunc.apply null,[key, value, ->
-            endfunc.apply null,arguments
+          loopfunc.apply this,[key, value, ->
+            endfunc.apply this,arguments
           ,->
-            func.apply null,arguments
+            func.apply this,arguments
           ].concat([].slice.call(arguments))
       else
-        endfunc.apply null,arguments
+        endfunc.apply this,arguments
   )(firstargs)
 
 ###
@@ -220,22 +220,22 @@ target['_for_in'] = (obj, firstargs, loopfunc, endfunc) ->
       endfunc(...)
          次の処理です。上記の通り、引数を受け取ることができます。
 ###
-target['_while'] = _while = (f_judge, firstarg_array, loopfunc, endfunc) ->
+target['_while'] = _w = (f_judge, firstarg_array, loopfunc, endfunc) ->
   if firstarg_array?
     firstarg_array = []
   (y (func) ->
     return ->
-      if f_judge.apply null,arguments
-        loopfunc.apply null,[->
+      if f_judge.apply this,arguments
+        loopfunc.apply this,[->
           #_break
-          endfunc.apply null,[].slice.call(arguments)
+          endfunc.apply this,[].slice.call(arguments)
         ,->
           #_next
-          func.apply null,arguments
+          func.apply this,arguments
         ].concat([].slice.call(arguments))
       else
-        endfunc.apply null,[].slice.call(arguments)
-  ).apply null,firstarg_array
+        endfunc.apply this,[].slice.call(arguments)
+  ).apply this,firstarg_array
 
 ###
    exception handling
@@ -281,15 +281,15 @@ target['exc'] = class exc
 
   fa = ->
     stackpop = _stack.pop()
-    stackpop._finally.apply null,[].slice.call(arguments)
+    stackpop._finally.apply this,[].slice.call(arguments)
 
   _finally: ->
     stackpop = _stack.pop()
-    stackpop._finally.apply null,[stackpop.next].concat([].slice.call(arguments))
+    stackpop._finally.apply this,[stackpop.next].concat([].slice.call(arguments))
 
   _throw: (_e) =>
     catchset = {}
-    _while ->(true),
+    _w ->(true),
     [],
     (_break,_next)=>
       catchset = _stack.pop()
@@ -297,12 +297,12 @@ target['exc'] = class exc
         _stack.push catchset
         result = catchset.e_array.indexOf _e
         if result != -1
-          catchset._catch.apply null,[_e].concat([].slice.call(arguments))
+          catchset._catch.apply this,[_e].concat([].slice.call(arguments))
         else
           if arguments.length <= 2
-            fa.apply null,[_next]
+            fa.apply this,[_next]
           else
-            fa.apply null,[].slice.call(arguments).shift().shift().unshift(_next)
+            fa.apply this,[].slice.call(arguments).shift().shift().unshift(_next)
       else
         _break()
     ,->
