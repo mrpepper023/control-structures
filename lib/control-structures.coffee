@@ -1,7 +1,20 @@
 ###
+   Copyright (c) 2015 Michio Yokomizo (mrpepper023) 
+   control-structures.js is released under the MIT License, 
+   see https://github.com/mrpepper023/control-structures
+   
+   you want to use this library in same namespace with node.js as with web-browser,
+   include this library like 'var cs = require('control-structures');'
+###
+if FORCE_CLIENTSIDE or (typeof process != "undefined" && typeof require != "undefined")
+  target = this['cs']
+else
+  target = module.exports
+
+###
    y combinator
 ###
-module.exports.y_combi = y_combi = (func) ->
+target['y'] = y = (func) ->
   return ((p) ->
     return () ->
       return func(p(p)).apply(this,arguments)
@@ -28,10 +41,10 @@ module.exports.y_combi = y_combi = (func) ->
       func2(next,...)
          以下、同様に好きな回数だけ続けられます。
 ###
-module.exports._ = _ = ->
+target['_'] = ->
   args = [].slice.call(arguments)
   firstargs = args.shift()
-  (y_combi (func) ->
+  (y (func) ->
     return ->
       arg = args.shift()
       if arg?
@@ -74,7 +87,7 @@ module.exports._ = _ = ->
       例外スコープのスタックをpopして、ユーザ終了処理を呼び出します。
       引数はf_finallyに渡されます。
 ###
-module.exports.exc = class exc
+target['exc'] = class exc
   _stack = []
   constructor: ->
 
@@ -105,29 +118,29 @@ module.exports.exc = class exc
          処理するArrayまたはObject
       applyargs_array
          applyfuncに渡すその他の引数を配列にして指定します。
-         [arg1,arg2]を指定すると、applyfunc(val,index,next,arg1,arg2)が呼ばれます。
-      applyfunc(val,index,next,...)
-         各要素に適用する関数です。objがArrayの場合、valは要素、indexは序数です。
+         [arg1,arg2]を指定すると、applyfunc(val,i,next,arg1,arg2)が呼ばれます。
+      applyfunc(val,i,next,...)
+         各要素に適用する関数です。objがArrayの場合、valは要素、iは序数です。
          処理が終わったらnext(...)を呼び出します。nextの各引数は、配列に代入されて
          endfuncに渡されます。
-      applyfunc(val,index,next,...)
+      applyfunc(val,i,next,...)
          各要素に適用する関数です。objがObjectの場合、keyは要素のキー、valueは要素の値です。
          処理が終わったらnext(...)を呼び出します。nextの各引数は、配列に代入されて
          endfuncに渡されます。
       endfunc(...)
          結果を受け取る関数です。next('foo','bar')が2要素から呼ばれる場合、
          endfunc(['foo','foo'],['bar','bar'])となります。配列内の順序は、各処理の
-         終了順です。弁別する必要のある場合、indexやkeyをnextの引数に加えて下さい。
+         終了順です。弁別する必要のある場合、iやkeyをnextの引数に加えて下さい。
 ###
-module.exports._each = _each = (obj, applyargs_array, applyfunc, endfunc) ->
+target['_each'] = (obj, applyargs_array, applyfunc, endfunc) ->
   ((nextc) ->
     isarr = ('Array' == Object.prototype.toString.call(obj).slice(8, -1))
     num = 0
     next = nextc()
     if isarr
-      for val,index in obj
+      for val,i in obj
         num++
-        applyfunc.apply null,[val,index,->
+        applyfunc.apply null,[val,i,->
           next.apply null,[num,endfunc].slice.call(arguments)
         ].concat(applyargs_array)
     else
@@ -143,10 +156,10 @@ module.exports._each = _each = (obj, applyargs_array, applyfunc, endfunc) ->
       count++
       if arguments.length > 0
         args = [].slice.call(arguments).shift().shift()
-        for arg,index in args
-          if result.length <= index
+        for arg,i in args
+          if result.length <= i
             result.push([])
-          result[index].push(arg)
+          result[i].push(arg)
       if count == num
         next.apply null,result
   )
@@ -154,9 +167,9 @@ module.exports._each = _each = (obj, applyargs_array, applyfunc, endfunc) ->
 ###
    for Loop
    
-   _for(index, f_judge, f_iter, firstarg_array, loopfunc, endfunc)
+   _for(i, f_judge, f_iter, firstarg_array, loopfunc, endfunc)
       初期値・条件・イテレータを用いて、loopfuncを繰り返します。
-      index
+      i
          カウンタの初期値です。
       f_judge(n) 返値=true,false
          カウンタに対する条件です。falseが返るとループが終了します。
@@ -178,22 +191,22 @@ module.exports._each = _each = (obj, applyargs_array, applyfunc, endfunc) ->
       endfunc(n,...)
          繰り返しの終了後に実行される関数です。nは終了時のカウンタの値です。
 ###
-module.exports._for = _for = (index, f_judge, f_iter, firstarg_array, loopfunc, endfunc) ->
+target['_for'] = (i, f_judge, f_iter, firstarg_array, loopfunc, endfunc) ->
   if firstarg_array?
     firstarg_array = []
-  (y_combi (func) ->
+  (y (func) ->
     return ->
-      if f_judge index
-        loopfunc.apply null,[index,->
+      if f_judge i
+        loopfunc.apply null,[i,->
           #_break
-          endfunc.apply null,[index].slice.call(arguments)
+          endfunc.apply null,[i].slice.call(arguments)
         ,->
           #_next
-          index = f_iter index
+          i = f_iter i
           func.apply null,arguments
         ].slice.call(arguments)
       else
-        endfunc.apply null,[index].slice.call(arguments)
+        endfunc.apply null,[i].slice.call(arguments)
   ).apply null,firstarg_array
 
 ###
@@ -211,24 +224,24 @@ module.exports._for = _for = (index, f_judge, f_iter, firstarg_array, loopfunc, 
       endfunc(...)
          繰り返しの終了時に呼ばれます。
 ###
-module.exports._for_in = _for_in = (obj, firstargs, loopfunc, endfunc) ->
-  index = 0
+target['_for_in'] = (obj, firstargs, loopfunc, endfunc) ->
+  i = 0
   isarr = ('Array' == Object.prototype.toString.call(obj).slice(8, -1))
   if isarr
     indexlimit = obj.length
   else
     indexlimit = Object.keys(obj).length
-  (y_combi (func) ->
+  (y (func) ->
     return ->
-      if index < indexlimit
+      if i < indexlimit
         if isarr
-          loopfunc.apply null,[obj[index],index, ->
+          loopfunc.apply null,[obj[i],i, ->
             endfunc.apply null,arguments
           ,->
             func.apply null,arguments
           ].slice.call(arguments)
         else
-          key = Object.keys(obj)[index]
+          key = Object.keys(obj)[i]
           value = obj[key]
           loopfunc.apply null,[key, value, ->
             endfunc.apply null,arguments
@@ -263,10 +276,10 @@ module.exports._for_in = _for_in = (obj, firstargs, loopfunc, endfunc) ->
       endfunc(...)
          次の処理です。上記の通り、引数を受け取ることができます。
 ###
-module.exports._while = _while = (f_judge, firstarg_array, loopfunc, endfunc) ->
+target['_while'] = (f_judge, firstarg_array, loopfunc, endfunc) ->
   if firstarg_array?
     firstarg_array = []
-  (y_combi (func) ->
+  (y (func) ->
     return ->
       if f_judge.apply null,arguments
         loopfunc.apply null,[->
@@ -277,7 +290,7 @@ module.exports._while = _while = (f_judge, firstarg_array, loopfunc, endfunc) ->
           func.apply null,arguments
         ].slice.call(arguments)
       else
-        endfunc.apply null,[index].slice.call(arguments)
+        endfunc.apply null,[].slice.call(arguments)
   ).apply null,firstarg_array
 
 ###
