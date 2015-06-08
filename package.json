@@ -1,10 +1,12 @@
 {
   "name": "control-structures",
-  "version": "0.0.2",
-  "private": true,
+  "description": "General control structures helper for asynchronous functions",
+  "homepage": "https://github.com/mrpepper023/control-structure",
+  "version": "0.0.5",
+  "private": false,
   "dependencies": {
   },
   "main": "./index",
-  "author": "Michio Yokomizo",
+  "author": "Michio Yokomizo (mrpepper023)",
   "license": "MIT"
 }

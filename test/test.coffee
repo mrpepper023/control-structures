@@ -63,6 +63,26 @@ cs._ ['firstarg1','arg2']
   if false
     next()
   else
+    console.log 'test3: y combinator'
+    
+    dummy = null
+    index = 10
+    (cs.y (func) ->
+      return (dummy)->
+        index -= 1
+        A ->
+          PRINT index.toString(),->
+            if index == 0
+              return next()
+            else
+              func(dummy)
+    )(dummy)
+    
+,(next) ->
+
+  if false
+    next()
+  else
     console.log 'test4'
     myexc = new cs.exc
     myexc._try([]

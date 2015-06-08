@@ -3,19 +3,40 @@
 <head>
 <meta charset="UTF-8">
 <title>Async test</title>
-<script type="text/javascript" src="http://ajax.googleapis.com/ajax/libs/jquery/1.8/jquery.min.js"></script>
-<script type="text/javascript" src="http://mrpepper023.github.io/lib/control-structures.min.js"></script>
+<link rel="stylesheet" href="http://ajax.googleapis.com/ajax/libs/jqueryui/1.11.4/themes/smoothness/jquery-ui.css">
+<link rel="stylesheet" href="http://ajax.googleapis.com/ajax/libs/jquerymobile/1.4.5/jquery.mobile.min.css">
+</head>
+<body>
+<h1>test</h1>
+<div id="test"></div>
+
+<!--scripts-->
+<script src="http://ajax.googleapis.com/ajax/libs/jquery/2.1.4/jquery.min.js"></script>
+<script src="http://ajax.googleapis.com/ajax/libs/jquerymobile/1.4.5/jquery.mobile.min.js"></script>
+<script src="http://ajax.googleapis.com/ajax/libs/jqueryui/1.11.4/jquery-ui.min.js"></script>
+<script src="http://mrpepper023.github.io/lib/control-structures.min.js"></script>
 <script type="text/coffeescript">
 ###
    ここから test code
 ###
+$(->
 
+  cs._ []
+  ,(next)->
+  
+    console.log 'test1'
+    next()
+  
+  ,(next)->
+  
+    console.log 'test2'
+    next()
+  
+)
 ###
    ここまで test code
 ###
 </script>
 <script type="text/javascript" src="http://mrpepper023.github.io/lib/coffee-script.js"></script>
-</head>
-<body>
 </body>
 </html>
