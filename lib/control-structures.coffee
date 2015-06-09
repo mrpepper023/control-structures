@@ -17,6 +17,8 @@
     root.cs = factory()
 )(this, () ->
 
+  a=(g)->[].slice.call(g)
+
   ###
      y combinator
   ###
@@ -48,13 +50,13 @@
            以下、同様に好きな回数だけ続けられます。
   ###
   _: ->
-    args = [].slice.call(arguments)
+    args = a(arguments)
     firstargs = args.shift()
     (@.y (func) ->
       return ->
         arg = args.shift()
         if arg?
-          passargs = [].slice.call(arguments)
+          passargs = a(arguments)
           passargs.unshift(func)
           arg.apply(this,passargs)
     ).apply this,firstargs
@@ -91,13 +93,13 @@
         for val,i in obj
           num++
           applyfunc.apply this,[val,i,->
-            next.apply this,[num,endfunc].concat([].slice.call(arguments))
+            next.apply this,[num,endfunc].concat(a(arguments))
           ].concat(applyargs_array)
       else
         for key,val of obj
           num++
           applyfunc.apply this,[key,val,->
-            next.apply this,[num,endfunc].concat([].slice.call(arguments))
+            next.apply this,[num,endfunc].concat(a(arguments))
           ].concat(applyargs_array)
     )(->
       count = 0
@@ -105,7 +107,7 @@
       return (num,next) ->
         count++
         if arguments.length > 0
-          args = [].slice.call(arguments)
+          args = a(arguments)
           args.shift()
           args.shift()
           for arg,i in args
@@ -149,14 +151,14 @@
         if f_judge i
           loopfunc.apply this,[i,->
             #_break
-            endfunc.apply this,[i].concat([].slice.call(arguments))
+            endfunc.apply this,[i].concat(a(arguments))
           ,->
             #_next
             i = f_iter i
             func.apply this,arguments
-          ].concat([].slice.call(arguments))
+          ].concat(a(arguments))
         else
-          endfunc.apply this,[i].concat([].slice.call(arguments))
+          endfunc.apply this,[i].concat(a(arguments))
     ).apply this,firstarg_array
 
   ###
@@ -190,7 +192,7 @@
               endfunc.apply this,arguments
             ,->
               func.apply this,arguments
-            ].concat([].slice.call(arguments))
+            ].concat(a(arguments))
           else
             key = Object.keys(obj)[i]
             value = obj[key]
@@ -198,7 +200,7 @@
               endfunc.apply this,arguments
             ,->
               func.apply this,arguments
-            ].concat([].slice.call(arguments))
+            ].concat(a(arguments))
         else
           endfunc.apply this,arguments
     ).apply this,firstargs
@@ -221,7 +223,7 @@
   _while: (firstarg_array, loopfunc, endfunc) ->
     (@.y (func) ->
       return ->
-        passargs = [].slice.call(arguments)
+        passargs = a(arguments)
         passargs.unshift ->
           #_next
           func.apply this,arguments
@@ -239,22 +241,22 @@
      myexc._try(block_args_array,f_block,e_array,f_catch,f_finally,f_next)
         例外スコープを開始します。実処理はblock内、例外処理はf_catch内、
         終了処理はf_finally内で行い、f_nextへと進みます。
-        現在のところ、f_catch,f_finally内で_throwすると、終了処理は完了しません
+        f_finally内で_throwすると、当該終了処理は完了せずに例外送出します
         block_args_array
            blockに渡す引数を、配列にして指定します。
-           [arg1,arg2]を渡すと、f_block(myexc,arg1,arg2)が呼ばれます。
-        f_block(myexc,...)
+           [arg1,arg2]を渡すと、f_block(arg1,arg2)が呼ばれます。
+        f_block(...)
            実処理を行うスコープです。このexc例外を発生しうる関数を
            呼び出すときはmyexcを渡して下さい。次へ進むときは
-           myexc._finally(...)を呼べば、f_finally(myexc,next,...)が呼ばれます。
+           myexc._finally(...)を呼べば、f_finally(next,...)が呼ばれます。
         e_array
            f_catchで処理する例外の種類を列挙した配列です。
            可読性のある文字列をお勧めします。
-        f_catch(myexc,_e,...)
+        f_catch(_e,...)
            _throwに渡された例外の種類と、その他の_throwに渡された引数が
            得られます。e_arrayで列挙した例外は全て処理して下さい。
            処理を終えたらmyexc._finally(...)を呼んで下さい。f_blockと同様です。
-        f_finally(myexc,next,...)
+        f_finally(next,...)
            終了処理を簡潔に行います。処理を終えたら、next(...)を呼んで下さい。
            f_next(...)が呼ばれます。基本的にはmyexcを引数に指定して下さい。
         f_next(...)
@@ -274,51 +276,59 @@
       block.apply this,block_args_array
 
     fa = ->
-      stackpop = _stack.pop()
-      stackpop._finally.apply this,[].slice.call(arguments)
+      if _stack.length > 0
+        stackpop = _stack.pop()
+        stackpop._finally.apply this,arguments
+      else
+        return
 
     _finally: ->
-      stackpop = _stack.pop()
-      stackpop._finally.apply this,[stackpop.next].concat([].slice.call(arguments))
+      if _stack.length > 0
+        stackpop = _stack.pop()
+        if stackpop.next?
+          stackpop._finally.apply this,[stackpop.next].concat(a(arguments))
+          return
+        else
+          stackpop._finally.apply this,[->return].concat(a(arguments))
+          return
+      else
+        return
 
     y = (func) ->
       return ((p) -> return -> return func(p(p)).apply(this,arguments)
-      )((p) ->       return -> return func(p(p)).apply(this,arguments)
+      )((p) -> return -> return func(p(p)).apply(this,arguments)
       )
     
-    _w = (firstarg_array, loopfunc, endfunc) ->
-      if firstarg_array?
-        firstarg_array = []
-      (y (func) ->
-        return ->
-          loopfunc.apply this,[->
-            #_break
-            endfunc.apply this,arguments
-          ,->
-            #_next
-            func.apply this,arguments
-          ].concat([].slice.call(arguments))
-      ).apply this,firstarg_array
+    _w = (loopfunc, endfunc) -> (y (func) -> return -> loopfunc(endfunc,func))()
 
     _throw: (_e) =>
       catchset = {}
-      _w [],(_break,_next)=>
+      uncaught = false
+      _w (_break,_next)=>
         catchset = _stack.pop()
         if catchset?
           _stack.push catchset
           result = catchset.e_array.indexOf _e
           if result != -1
-            catchset._catch.apply this,[_e].concat([].slice.call(arguments))
+            catchset._catch.apply this,[_e].concat(a(arguments))
+            return
           else
             if arguments.length <= 2
-              fa.apply this,[_next]
+              fa.call this,_next
             else
-              fa.apply this,[].slice.call(arguments).shift().shift().unshift(_next)
+              passargs = a(arguments)
+              passargs.shift()
+              passargs.shift()
+              passargs.unshift(_next)
+              fa.apply this,passargs
         else
+          uncaught = true
           _break()
       ,->
-        console.log 'uncaught exception: '+_e.toString()
-        process.exit 1
+        if uncaught
+          console.log 'uncaught exception: '+_e.toString()
+          process.exit 1
+        return
 
 )
 

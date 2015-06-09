@@ -55,6 +55,9 @@ cs._ []
     PRINT key+': '+val,->
       PRINT arg,->
         _next('notfirst')
+  ,->
+    PRINT 'end',->
+      next()
 
 ,(next) ->
 
@@ -74,7 +77,7 @@ cs._ []
           PRINT 'NEST2-1',->
             PRINT 'NEST2-2',->
               if true
-                myexc._throw 'err1'
+                myexc._throw 'err2'
               else
                 PRINT 'NEST2-3',->
                   myexc._finally()
@@ -100,7 +103,7 @@ cs._ []
       myexc._finally()
   ,(fnext)->
     #finally
-    PRINT 'NEST1-FINALLY',
+    PRINT 'NEST1-FINALLY',->
       fnext()
   ,next)
 
