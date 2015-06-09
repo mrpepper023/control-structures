@@ -15,14 +15,34 @@
 <script src="http://ajax.googleapis.com/ajax/libs/jquerymobile/1.4.5/jquery.mobile.min.js"></script>
 <script src="http://ajax.googleapis.com/ajax/libs/jqueryui/1.11.4/jquery-ui.min.js"></script>
 <script src="http://mrpepper023.github.io/lib/control-structures.min.js"></script>
-<script type="text/javascript">
-/*
-   ここから test code (javascript)
- */
+<script type="text/coffeescript">
+###
+   ここから test code
+###
+$(->
 
-/*
-   ここまで test code (javascript)
- */
+  PRINT = (str,next) -> console.log str; setTimeout(next, 200)
+
+  cs._while [25*25, 25*88]
+  ,(_break,_next,arg1,arg2) ->
+
+    PRINT arg1,->
+      PRINT arg2,->
+        if (arg2 % arg1) == 0
+          _break(arg1)
+        else
+          _next(arg2 % arg1,arg1)
+
+  ,(arg) ->
+  
+    PRINT 'result: '+arg.toString(),->
+      return
+  
+)
+###
+   ここまで test code
+###
 </script>
+<script type="text/javascript" src="http://mrpepper023.github.io/lib/coffee-script.js"></script>
 </body>
 </html>

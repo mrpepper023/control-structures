@@ -21,15 +21,21 @@
 ###
 $(->
 
-  cs._ []
-  ,(next)->
+  PRINT = (str,next) -> console.log str; setTimeout(next, 200)
+
+  cs._each [2,3,5,7,11]
+  ,['arg1']
+  ,(val,i,next,str1) ->
+
+    PRINT 'apply',->
+      next(val,i)
+
+  ,(array_of_args_from_next1,array_of_args_from_next2) ->
   
-    console.log 'test1'
-    next()
-  
-  ,(next)->
-  
-    console.log 'test2'
+    for num in array_of_args_from_next1
+      console.log 'value: '+num.toString()
+    for num in array_of_args_from_next2
+      console.log 'counter: '+num.toString()
     next()
   
 )

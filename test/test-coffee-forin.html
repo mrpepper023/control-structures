@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<title>Async test</title>
+<link rel="stylesheet" href="http://ajax.googleapis.com/ajax/libs/jqueryui/1.11.4/themes/smoothness/jquery-ui.css">
+<link rel="stylesheet" href="http://ajax.googleapis.com/ajax/libs/jquerymobile/1.4.5/jquery.mobile.min.css">
+</head>
+<body>
+<h1>test</h1>
+<div id="test"></div>
+
+<!--scripts-->
+<script src="http://ajax.googleapis.com/ajax/libs/jquery/2.1.4/jquery.min.js"></script>
+<script src="http://ajax.googleapis.com/ajax/libs/jquerymobile/1.4.5/jquery.mobile.min.js"></script>
+<script src="http://ajax.googleapis.com/ajax/libs/jqueryui/1.11.4/jquery-ui.min.js"></script>
+<script src="http://mrpepper023.github.io/lib/control-structures.min.js"></script>
+<script type="text/coffeescript">
+###
+   ここから test code
+###
+$(->
+
+  PRINT = (str,next) -> console.log str; setTimeout(next, 200)
+
+  cs._for_in {bro:'ani',sis:'imo',dad:'tousan',mom:'kaasan'}
+  ,['first']
+  ,(key,val,_break,_next,arg) ->
+
+    PRINT key+': '+val,->
+      PRINT arg,->
+        _next('notfirst')
+
+  ,->
+  
+    PRINT 'end',->
+      return
+  
+)
+###
+   ここまで test code
+###
+</script>
+<script type="text/javascript" src="http://mrpepper023.github.io/lib/coffee-script.js"></script>
+</body>
+</html>

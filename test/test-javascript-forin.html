@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<title>Async test</title>
+</head>
+<body>
+<h1>test</h1>
+<div id="test"></div>
+
+<!--scripts-->
+<script src="http://ajax.googleapis.com/ajax/libs/jquery/2.1.4/jquery.min.js"></script>
+<script src="http://mrpepper023.github.io/lib/control-structures.min.js"></script>
+<script type="text/javascript">
+/*
+   ここから test code
+ */
+$(function () {
+
+    PRINT = function(str, next) {
+      console.log(str);
+      return setTimeout(next, 200);
+    };
+
+    cs._for_in({
+      bro: 'ani',
+      sis: 'imo',
+      dad: 'tousan',
+      mom: 'kaasan'
+    }
+    , ['first']
+    , function(key, val, _break, _next, arg) {
+      PRINT(key + ': ' + val, function() {
+        PRINT(arg, function() {
+          _next('notfirst');
+        });
+      });
+    }, function() {});
+  
+});
+/*
+   ここまで test code
+ */
+</script>
+</body>
+</html>

@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<title>Async test</title>
+</head>
+<body>
+<h1>test</h1>
+<div id="test"></div>
+
+<!--scripts-->
+<script src="http://ajax.googleapis.com/ajax/libs/jquery/2.1.4/jquery.min.js"></script>
+<script src="http://mrpepper023.github.io/lib/control-structures.min.js"></script>
+<script type="text/javascript">
+/*
+   ここから test code
+ */
+$(function () {
+
+    PRINT = function(str, next) {
+      console.log(str);
+      return setTimeout(next, 200);
+    };
+    
+    cs._each([2, 3, 5, 7, 11], ['arg1'], function(val, i, next, str1) {
+      PRINT('apply', function() {
+        next(val, i);
+      });
+    }, function(array_of_args_from_next1, array_of_args_from_next2) {
+      var j, k, len, len1, num;
+      for (j = 0, len = array_of_args_from_next1.length; j < len; j++) {
+        num = array_of_args_from_next1[j];
+        console.log('value: ' + num.toString());
+      }
+      for (k = 0, len1 = array_of_args_from_next2.length; k < len1; k++) {
+        num = array_of_args_from_next2[k];
+        console.log('counter: ' + num.toString());
+      }
+      return;
+    });
+  
+});
+/*
+   ここまで test code
+ */
+</script>
+</body>
+</html>
