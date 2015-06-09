@@ -1,9 +1,9 @@
 {
   "name": "control-structures",
   "description": "General control structures helper for asynchronous functions",
-  "repository" : { "type" : "git", "url" : "https://github.com/mrpepper023/control-structure.git"},
-  "homepage": "https://github.com/mrpepper023/control-structure",
-  "version": "0.0.7",
+  "repository" : { "type" : "git", "url" : "https://github.com/mrpepper023/control-structures.git"},
+  "homepage": "https://github.com/mrpepper023/control-structures",
+  "version": "0.0.8",
   "private": false,
   "dependencies": {
   },
