@@ -61,7 +61,7 @@ $(->
       myexc._finally()
   ,(fnext)->
     #finally
-    PRINT 'NEST1-FINALLY',
+    PRINT 'NEST1-FINALLY',->
       fnext()
   ,next)
   

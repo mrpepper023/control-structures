@@ -3,7 +3,7 @@
   "description": "General control structures helper for asynchronous functions",
   "repository" : { "type" : "git", "url" : "https://github.com/mrpepper023/control-structures.git"},
   "homepage": "https://github.com/mrpepper023/control-structures",
-  "version": "0.0.9",
+  "version": "0.0.10",
   "private": false,
   "dependencies": {
   },

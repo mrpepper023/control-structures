@@ -63,7 +63,9 @@ $(function () {
         myexc._finally();
       });
     }, function(fnext) {
-      PRINT('NEST1-FINALLY', fnext());
+      PRINT('NEST1-FINALLY', function() {
+        fnext();
+      });
     }, function() {});
   
 });
