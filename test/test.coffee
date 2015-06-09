@@ -1,89 +1,59 @@
 cs = require('../lib/control-structures')
 
-A = (func) -> console.log 'A'; setTimeout func, 500
-B = (func) -> console.log 'B'; setTimeout func, 500
-C = (func) -> console.log 'C'; setTimeout func, 500
-D = (func) -> console.log 'D'; setTimeout func, 500
-E = (func) -> console.log 'E'; setTimeout func, 500
-F = (func) -> console.log 'F'; setTimeout func, 500
-G = (func) -> console.log 'G'; setTimeout func, 500
-H = (func) -> console.log 'H'; setTimeout func, 500
-I = (func) -> console.log 'I'; setTimeout func, 500
 PRINT = (str,func) -> console.log 'PRINT: '+str; setTimeout func, 500
 
-a = -> console.log 'a'
-b = -> console.log 'b'
-c = -> console.log 'c'
-d = -> console.log 'd'
-e = -> console.log 'e'
-f = -> console.log 'f'
-g = -> console.log 'g'
-h = -> console.log 'h'
-i = -> console.log 'i'
-j = -> console.log 'j'
-print = (str) -> console.log 'print: '+str
+cs._ []
+,(next) ->
 
+  console.log '#each test'
 
-cs._ ['firstarg1','arg2']
-,(next,str1,str2) ->
+  cs._each [2,3,5,7,11]
+  ,['arg1']
+  ,(val,i,next,str1) ->
 
-  if true
+    PRINT 'apply',->
+      next(val,i)
+
+  ,(array_of_args_from_next1,array_of_args_from_next2) ->
+  
+    for num in array_of_args_from_next1
+      console.log 'value: '+num.toString()
+    for num in array_of_args_from_next2
+      console.log 'counter: '+num.toString()
     next()
-  else
-    console.log 'test1'
-    PRINT str1,->
-      PRINT str2,->
-        C ->
-          D ->
-            next 'err'
-
-,(next,errstr) ->
-
-  if true
-    next()
-  else
-    console.log 'test2'
-    PRINT errstr,->
-      F ->
-        G ->
-          next()
 
 ,(next) ->
 
-  if true
-    next()
-  else
-    console.log 'test3'
-    H ->
-      I ->
-        next()
+  console.log '#for test'
+
+  cs._for 0,((n)-> n<10),((n)-> n+1)
+  ,[]
+  ,(n,_break,_next) ->
+
+    PRINT 'counter: '+n.toString(),->
+      _next()
+
+  ,(n) ->
+  
+    PRINT 'last counter: '+n.toString(),->
+      next()
 
 ,(next) ->
 
-  if false
-    next()
-  else
-    console.log 'test3: y combinator'
+  console.log '#for in test'
+
+  cs._for_in {bro:'ani',sis:'imo',dad:'tousan',mom:'kaasan'}
+  ,['first']
+  ,(key,val,_break,_next,arg) ->
+
+    PRINT key+': '+val,->
+      PRINT arg,->
+        _next('notfirst')
+
+,(next) ->
+
+    console.log '#exc test'
     
-    dummy = null
-    index = 10
-    (cs.y (func) ->
-      return (dummy)->
-        index -= 1
-        A ->
-          PRINT index.toString(),->
-            if index == 0
-              return next()
-            else
-              func(dummy)
-    )(dummy)
-    
-,(next) ->
-
-  if false
-    next()
-  else
-    console.log 'test4'
     myexc = new cs.exc
     myexc._try([]
     ,->
@@ -125,4 +95,13 @@ cs._ ['firstarg1','arg2']
       PRINT 'NEST1-FINALLY',
         fnext()
     ,next)
+
+,(next) ->
+
+
+,(next) ->
+
+
+,(next) ->
+
 

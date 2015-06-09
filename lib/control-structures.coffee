@@ -57,7 +57,7 @@
           passargs = [].slice.call(arguments)
           passargs.unshift(func)
           arg.apply(this,passargs)
-    ).apply(this,firstargs)
+    ).apply this,firstargs
 
   ###
      Each (simultaneous)
@@ -105,7 +105,9 @@
       return (num,next) ->
         count++
         if arguments.length > 0
-          args = [].slice.call(arguments).shift().shift()
+          args = [].slice.call(arguments)
+          args.shift()
+          args.shift()
           for arg,i in args
             if result.length <= i
               result.push([])
@@ -142,8 +144,6 @@
            繰り返しの終了後に実行される関数です。nは終了時のカウンタの値です。
   ###
   _for: (i, f_judge, f_iter, firstarg_array, loopfunc, endfunc) ->
-    if firstarg_array?
-      firstarg_array = []
     (@.y (func) ->
       return ->
         if f_judge i
@@ -175,7 +175,7 @@
            繰り返しの終了時に呼ばれます。
   ###
   _for_in: (obj, firstargs, loopfunc, endfunc) ->
-    i = 0
+    i = -1
     isarr = ('Array' == Object.prototype.toString.call(obj).slice(8, -1))
     if isarr
       indexlimit = obj.length
@@ -183,6 +183,7 @@
       indexlimit = Object.keys(obj).length
     (@.y (func) ->
       return ->
+        i += 1
         if i < indexlimit
           if isarr
             loopfunc.apply this,[obj[i],i, ->
@@ -200,7 +201,7 @@
             ].concat([].slice.call(arguments))
         else
           endfunc.apply this,arguments
-    )(firstargs)
+    ).apply this,firstargs
 
   ###
      while Loop
@@ -218,17 +219,16 @@
            次の処理です。上記の通り、引数を受け取ることができます。
   ###
   _while: (firstarg_array, loopfunc, endfunc) ->
-    if firstarg_array?
-      firstarg_array = []
     (@.y (func) ->
       return ->
-        loopfunc.apply this,[->
-          #_break
-          endfunc.apply this,[].slice.call(arguments)
-        ,->
+        passargs = [].slice.call(arguments)
+        passargs.unshift ->
           #_next
           func.apply this,arguments
-        ].concat([].slice.call(arguments))
+        passargs.unshift ->
+          #_break
+          endfunc.apply this,arguments
+        loopfunc.apply this,passargs
     ).apply this,firstarg_array
 
   ###
@@ -293,7 +293,7 @@
         return ->
           loopfunc.apply this,[->
             #_break
-            endfunc.apply this,[].slice.call(arguments)
+            endfunc.apply this,arguments
           ,->
             #_next
             func.apply this,arguments
