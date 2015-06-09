@@ -1,7 +1,7 @@
 # control-structures
 
 a tiny library aids for using asynchronous functions with various control structures.
-[GitHub Repository](https://github.com/mrpepper023/control-structures)
+[[GitHub Repository](https://github.com/mrpepper023/control-structures)] [[npm registry](https://www.npmjs.com/package/control-structures)]
 
 # Installation
 

@@ -3,11 +3,16 @@
   "description": "General control structures helper for asynchronous functions",
   "repository" : { "type" : "git", "url" : "https://github.com/mrpepper023/control-structures.git"},
   "homepage": "https://github.com/mrpepper023/control-structures",
-  "version": "0.0.10",
+  "version": "0.0.11",
   "private": false,
   "dependencies": {
   },
   "main": "./index",
+  "keywords": [
+    "control structure",
+    "asynchronous",
+    "sequential execution"
+  ],
   "author": "Michio Yokomizo (mrpepper023)",
   "license": "MIT"
 }
